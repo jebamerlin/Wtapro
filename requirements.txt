@@ -1,0 +1,6 @@
+Django==4.2
+pymongo
+gunicorn
+django-cors-headers
+whitenoise
+djangorestframework==3.15.1
