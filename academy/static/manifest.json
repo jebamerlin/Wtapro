@@ -1,6 +1,6 @@
 {
   "name": "WTA Academy",
-  "short_name": "WTA App",
+  "short_name": "WTA",
   "description": "WTA Tennis Academy Management App",
   "start_url": "/",
   "display": "standalone",
