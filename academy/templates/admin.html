@@ -27,6 +27,102 @@
 
   <style>
 
+    /* ---------- TOP BAR ---------- */
+
+.top-bar{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin:20px 0;
+}
+
+.top-bar input{
+    flex:1;
+    padding:12px 16px;
+    border:1px solid #ddd;
+    border-radius:14px;
+    font-size:15px;
+    outline:none;
+}
+
+.top-bar input:focus{
+    border-color:#a6d3f2;
+    box-shadow:0 0 8px rgba(166,211,242,.4);
+}
+
+.back-btn{
+    width:48px;
+    height:48px;
+    border:none;
+    border-radius:14px;
+    background:#a6d3f2;
+    color:white;
+    cursor:pointer;
+    font-size:18px;
+}
+
+/* ---------- SORT BUTTON ---------- */
+
+.sort-btn{
+    padding:12px 18px;
+    border:none;
+    border-radius:14px;
+    background:#a6d3f2;
+    color:white;
+    cursor:pointer;
+    font-size:15px;
+}
+
+.sort-dropdown{
+    position:relative;
+}
+
+/* ---------- SORT MENU ---------- */
+
+.sort-menu{
+
+    position:fixed;
+
+    left:50%;
+    bottom:20px;
+
+    transform:translateX(-50%);
+
+    width:88%;
+    max-width:380px;
+
+    background:white;
+
+    border-radius:30px;
+
+    padding:18px;
+
+    box-shadow:0 -10px 40px rgba(0,0,0,.18);
+
+    display:none;
+
+    z-index:99999;
+
+}
+
+.sort-menu div{
+
+    padding:15px;
+
+    border-radius:14px;
+
+    cursor:pointer;
+
+    font-weight:600;
+
+}
+
+.sort-menu div:hover{
+
+    background:#f5f7fb;
+
+}
+
     .modal{
     display:none;
     position:fixed;
@@ -602,6 +698,70 @@ h1{
 </div>
 </div>
 
+
+
+<div id="studentToolbar" class="top-bar" style="display:none;">
+
+    <button class="back-btn" onclick="goBack()">
+        <i class="fa-solid fa-arrow-left"></i>
+    </button>
+
+    <input
+        type="text"
+        id="searchBox"
+        placeholder="Search student..."
+        onkeyup="searchStudent(this.value)"
+    >
+
+    <div class="sort-dropdown">
+
+        <button class="sort-btn" onclick="toggleSortMenu()">
+            <i class="fa-solid fa-arrow-down-wide-short"></i>
+            Sort
+        </button>
+
+        <div class="sort-menu" id="sortMenu">
+
+            <div onclick="sortStudents('az')">
+                <i class="fa-solid fa-arrow-down-a-z"></i>
+                A-Z
+            </div>
+
+            <div onclick="sortStudents('batch1')">
+                Batch 1
+            </div>
+
+            <div onclick="sortStudents('batch2')">
+                Batch 2
+            </div>
+
+            <div onclick="sortStudents('courtA')">
+                Court A
+            </div>
+
+            <div onclick="sortStudents('courtB')">
+                Court B
+            </div>
+
+            <div onclick="sortStudents('morning')">
+                Morning
+            </div>
+
+            <div onclick="sortStudents('evening')">
+                Evening
+            </div>
+
+            <div onclick="closeSortMenu()">
+                ❌ Cancel
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
 <div id="students"></div>
 
 <script>
@@ -736,39 +896,26 @@ function closeStudentForm(){
 
 
 
+let students = [];
+let allStudents = [];
+
 function loadStudents(branch){
 
-fetch(`/admin/students/?branch=${branch}`)
+    document.querySelector(".widget-container").style.display = "none";
+    document.getElementById("studentToolbar").style.display = "flex";
 
-.then(res => res.json())
+    fetch(`/admin/students/?branch=${branch}`)
 
-.then(data => {
+    .then(res => res.json())
 
-    let html = "";
+    .then(data => {
 
-    data.forEach(s => {
+        students = data;
+        allStudents = [...data];
 
-        html += `
+        renderStudents(students);
 
-        <div class="student-card"
-
-        onclick="openProfile('${s._id}')">
-
-            <h3>${s.name}</h3>
-
-            <p><b>Batch :</b> ${s.batch}</p>
-
-            <p><b>Court :</b> ${s.court}</p>
-
-            <p><b>Session :</b> ${s.session}</p>
-        </div>
-
-        `;
     });
-
-    document.getElementById("students").innerHTML = html;
-
-});
 
 }
 
@@ -778,6 +925,121 @@ function openProfile(id){
 }
 
 
+function renderStudents(data){
+
+    let html = "";
+
+    data.forEach(s => {
+
+        html += `
+
+        <div class="student-card"
+             onclick="openProfile('${s._id}')">
+
+            <h3>${s.name}</h3>
+
+            <p><b>Batch :</b> ${s.batch}</p>
+
+            <p><b>Court :</b> ${s.court}</p>
+
+            <p><b>Session :</b> ${s.session}</p>
+
+        </div>
+
+        `;
+
+    });
+
+    document.getElementById("students").innerHTML = html;
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+function searchStudent(value){
+
+    let filtered = allStudents.filter(s =>
+        s.name.toLowerCase().includes(value.toLowerCase())
+    );
+
+    renderStudents(filtered);
+
+}
+
+
+function sortStudents(type){
+
+    let sorted = [...allStudents];
+
+    if(type==="az"){
+        sorted.sort((a,b)=>a.name.localeCompare(b.name));
+    }
+
+    else if(type==="batch1"){
+        sorted = sorted.filter(s=>String(s.batch).includes("1"));
+    }
+
+    else if(type==="batch2"){
+        sorted = sorted.filter(s=>String(s.batch).includes("2"));
+    }
+
+    else if(type==="courtA"){
+        sorted = sorted.filter(s=>s.court==="A");
+    }
+
+    else if(type==="courtB"){
+        sorted = sorted.filter(s=>s.court==="B");
+    }
+
+    else if(type==="morning"){
+        sorted = sorted.filter(s=>s.session==="Morning");
+    }
+
+    else if(type==="evening"){
+        sorted = sorted.filter(s=>s.session==="Evening");
+    }
+
+    renderStudents(sorted);
+
+    closeSortMenu();
+
+}
+
+
+function toggleSortMenu(){
+
+    document.getElementById("sortMenu").style.display="block";
+
+}
+
+function closeSortMenu(){
+
+    document.getElementById("sortMenu").style.display="none";
+
+}
+
+
+function goBack(){
+
+    document.querySelector(".widget-container").style.display="grid";
+
+    document.getElementById("studentToolbar").style.display="none";
+
+    document.getElementById("students").innerHTML="";
+
+}
 
 
 
