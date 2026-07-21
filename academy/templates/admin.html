@@ -644,6 +644,10 @@ h1{
     <label>Join Year <span class="required">*</span></label>
     <select id="joinYear" required>
         <option value="">Select Join Year</option>
+        <option>2013</option>
+        <option>2014</option>
+        <option>2015</option>
+        <option>2016</option>
         <option>2017</option>
         <option>2018</option>
         <option>2019</option>
@@ -1102,9 +1106,11 @@ fetch(`/coach-attendance/${name}/`)
 
             <p><b>Check In:</b> ${log.inTime}</p>
 
-            <p><b>Check Out:</b>
-                ${log.outTime || "Active"}
-            </p>
+            <p><b>Start Ball Count:</b> ${log.startBallCount ?? "-"}</p>
+
+            <p><b>Check Out:</b> ${log.outTime || "Active"}</p>
+
+            <p><b>End Ball Count:</b> ${log.endBallCount ?? "-"}</p>
 
         </div>
         `;
