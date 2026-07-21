@@ -564,3 +564,27 @@ def coach_fee_status(request):
             })
 
     return JsonResponse(unpaid, safe=False)
+
+
+
+
+#danger just to refresh things
+
+
+# from django.http import JsonResponse
+
+# def clear_attendance_and_fees(request):
+#     result = students_collection.update_many(
+#         {},
+#         {
+#             "$set": {
+#                 "attendance": {},
+#                 "fees": {}
+#             }
+#         }
+#     )
+
+#     return JsonResponse({
+#         "message": "Attendance and fees cleared successfully.",
+#         "students_updated": result.modified_count
+#     })
