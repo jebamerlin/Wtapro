@@ -1085,40 +1085,73 @@ fetch("/coach-attendance/")
 }
 function showCoachAttendance(name){
 
-fetch(`/coach-attendance/${name}/`)
+    fetch(`/coach-attendance/${name}/`)
+    .then(res => res.json())
+    .then(logs => {
 
-.then(res => res.json())
+        // Newest date first
+        logs.sort((a, b) => b.date.localeCompare(a.date));
 
-.then(logs => {
+        let html = `
+    <button
+        class="save-btn"
+        style="margin-bottom:15px;"
+        onclick="loadCoaches()"
+    >
+         GO BACK
+    </button>
 
-    let html = `
     <h2>${name} Attendance</h2>
-    `;
 
-    logs.forEach(log => {
-
-        html += `
-        <div class="student-card">
-
-            <p><b>Date:</b> ${log.date}</p>
-
-            <p><b>Location:</b> ${log.location}</p>
-
-            <p><b>Check In:</b> ${log.inTime}</p>
-
-            <p><b>Start Ball Count:</b> ${log.startBallCount ?? "-"}</p>
-
-            <p><b>Check Out:</b> ${log.outTime || "Active"}</p>
-
-            <p><b>End Ball Count:</b> ${log.endBallCount ?? "-"}</p>
-
-        </div>
+    <input
+        type="date"
+        id="attendanceDate"
+        onchange="filterAttendance('${name}')"
+                style="
+                    width:100%;
+                    padding:12px;
+                    margin:15px 0;
+                    border-radius:10px;
+                    border:1px solid #ddd;
+                    box-sizing:border-box;
+                "
+            >
         `;
+
+        if(logs.length === 0){
+            html += `
+                <div class="student-card">
+                    <p style="text-align:center;">
+                        No attendance records found.
+                    </p>
+                </div>
+            `;
+        }
+
+        logs.forEach(log => {
+
+            html += `
+                <div class="student-card">
+
+                    <p><b>Date:</b> ${log.date}</p>
+
+                    <p><b>Location:</b> ${log.location}</p>
+
+                    <p><b>Check In:</b> ${log.inTime}</p>
+
+                    <p><b>Start Ball Count:</b> ${log.startBallCount ?? "-"}</p>
+
+                    <p><b>Check Out:</b> ${log.outTime || "Active"}</p>
+
+                    <p><b>End Ball Count:</b> ${log.endBallCount ?? "-"}</p>
+
+                </div>
+            `;
+        });
+
+        document.getElementById("students").innerHTML = html;
+
     });
-
-    document.getElementById("students").innerHTML = html;
-
-});
 
 }
 
@@ -1177,6 +1210,89 @@ fetch("/fee-status/")
 });
 
 }
+
+
+function filterAttendance(name){
+
+    const selectedDate =
+        document.getElementById("attendanceDate").value;
+
+    fetch(`/coach-attendance/${name}/`)
+    .then(res => res.json())
+    .then(logs => {
+
+        if(selectedDate){
+            logs = logs.filter(log => log.date === selectedDate);
+        }
+
+        // Newest first
+        logs.sort((a,b)=>b.date.localeCompare(a.date));
+
+        let html = `
+    <button
+        class="save-btn"
+        style="margin-bottom:15px;"
+        onclick="loadCoaches()"
+    >
+        GO BACK
+    </button>
+
+    <h2>${name} Attendance</h2>
+
+    <input
+        type="date"
+        id="attendanceDate"
+        value="${selectedDate}"
+                onchange="filterAttendance('${name}')"
+                style="
+                    width:100%;
+                    padding:12px;
+                    margin:15px 0;
+                    border-radius:10px;
+                    border:1px solid #ddd;
+                    box-sizing:border-box;
+                "
+            >
+        `;
+
+        if(logs.length === 0){
+            html += `
+                <div class="student-card">
+                    <p style="text-align:center;">
+                        No attendance found for this date.
+                    </p>
+                </div>
+            `;
+        }
+
+        logs.forEach(log => {
+
+            html += `
+                <div class="student-card">
+
+                    <p><b>Date:</b> ${log.date}</p>
+
+                    <p><b>Location:</b> ${log.location}</p>
+
+                    <p><b>Check In:</b> ${log.inTime}</p>
+
+                    <p><b>Start Ball Count:</b> ${log.startBallCount ?? "-"}</p>
+
+                    <p><b>Check Out:</b> ${log.outTime || "Active"}</p>
+
+                    <p><b>End Ball Count:</b> ${log.endBallCount ?? "-"}</p>
+
+                </div>
+            `;
+        });
+
+        document.getElementById("students").innerHTML = html;
+
+    });
+
+}
+
+
 
 </script>
 
