@@ -140,6 +140,18 @@ def mark_attendance(request):
 
             today = str(date.today())
 
+            # Get today's attendance
+            student = students_collection.find_one(
+                {"_id": ObjectId(student_id)},
+                {"attendance": 1}
+            )
+
+            already_present = student.get("attendance", {}).get(today)
+
+            # Don't change Present to Absent on the same day
+            if already_present is True and present is False:
+                return JsonResponse({"message": "Already present today"})
+
             students_collection.update_one(
                 {"_id": ObjectId(student_id)},
                 {
