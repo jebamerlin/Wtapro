@@ -1,26 +1,51 @@
-const CACHE_NAME = 'wta-app-cache-v1';
-const urlsToCache = [
-    '/'
-];
+const CACHE_NAME = "wta-app-cache-v2";
 
-// Install the service worker
-self.addEventListener('install', event => {
-    event.waitUntil(
-        caches.open(CACHE_NAME).then(cache => {
-            console.log('Opened cache');
-            return cache.addAll(urlsToCache);
-        })
-    );
+// Install
+self.addEventListener("install", event => {
+    self.skipWaiting();
 });
 
-// Fetch data (allows basic offline support)
-self.addEventListener('fetch', event => {
+// Activate
+self.addEventListener("activate", event => {
+    event.waitUntil(
+        caches.keys().then(keys =>
+            Promise.all(
+                keys.map(key => {
+                    if (key !== CACHE_NAME) {
+                        return caches.delete(key);
+                    }
+                })
+            )
+        )
+    );
+
+    self.clients.claim();
+});
+
+// Network First Strategy
+self.addEventListener("fetch", event => {
+
+    // Only cache GET requests
+    if (event.request.method !== "GET") {
+        return;
+    }
+
     event.respondWith(
-        caches.match(event.request).then(response => {
-            if (response) {
-                return response; // Return cached version
-            }
-            return fetch(event.request); // Fetch from network
-        })
+        fetch(event.request)
+            .then(networkResponse => {
+
+                // Save a copy in cache
+                const responseClone = networkResponse.clone();
+
+                caches.open(CACHE_NAME).then(cache => {
+                    cache.put(event.request, responseClone);
+                });
+
+                return networkResponse;
+            })
+            .catch(() => {
+                // Offline → use cache if available
+                return caches.match(event.request);
+            })
     );
 });
