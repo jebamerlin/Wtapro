@@ -6,7 +6,7 @@ urlpatterns = [
 
     path("", views.attendance_page),
     # danger just to clear data
-    path("clear-data/", views.clear_attendance_and_fees),
+    # path("clear-data/", views.clear_attendance_and_fees),
 
     path("admin-page/", views.admin_page),
 
