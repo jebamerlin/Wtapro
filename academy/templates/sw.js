@@ -25,7 +25,6 @@ self.addEventListener("activate", event => {
 // Network First Strategy
 self.addEventListener("fetch", event => {
 
-    // Only cache GET requests
     if (event.request.method !== "GET") {
         return;
     }
@@ -34,18 +33,20 @@ self.addEventListener("fetch", event => {
         fetch(event.request)
             .then(networkResponse => {
 
-                // Save a copy in cache
-                const responseClone = networkResponse.clone();
+                if (
+                    networkResponse &&
+                    networkResponse.status === 200 &&
+                    event.request.url.startsWith(self.location.origin)
+                ) {
+                    const responseClone = networkResponse.clone();
 
-                caches.open(CACHE_NAME).then(cache => {
-                    cache.put(event.request, responseClone);
-                });
+                    caches.open(CACHE_NAME).then(cache => {
+                        cache.put(event.request, responseClone);
+                    });
+                }
 
                 return networkResponse;
             })
-            .catch(() => {
-                // Offline → use cache if available
-                return caches.match(event.request);
-            })
+            .catch(() => caches.match(event.request))
     );
 });
